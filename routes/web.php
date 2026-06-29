@@ -22,12 +22,6 @@ Route::get('/produk/{product}', [ProductController::class, 'shopShow'])->name('s
 // Admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('products', ProductController::class)->except(['show']);
-});
-
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('products', ProductController::class)->except(['show']);
-    
-    // Tambahkan ini
     Route::get('/transaksi', function() {
         return view('admin.transactions.index', ['transactions' => collect()]);
     })->name('transactions.index');
