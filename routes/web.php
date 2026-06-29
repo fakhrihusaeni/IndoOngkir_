@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\RajaOngkirController;
 
 // Auth
 Route::middleware('guest')->group(function () {
@@ -25,4 +27,24 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/transaksi', function() {
         return view('admin.transactions.index', ['transactions' => collect()]);
     })->name('transactions.index');
+});
+
+// Keranjang
+Route::middleware('auth')->group(function () {
+    Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/keranjang/tambah/{product}', [CartController::class, 'add'])->name('cart.add');
+    Route::patch('/keranjang/update/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/keranjang/hapus/{cartItem}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+
+    // Sementara sampai Mhs 3 selesai
+    Route::get('/transaksi', function() {
+        return view('transactions.index', ['transactions' => collect()]);
+    })->name('transactions.index');
+});
+// RajaOngkir API
+Route::middleware('auth')->prefix('api/ongkir')->group(function () {
+    Route::get('/provinces', [RajaOngkirController::class, 'getProvinces'])->name('ongkir.provinces');
+    Route::get('/cities', [RajaOngkirController::class, 'getCities'])->name('ongkir.cities');
+    Route::post('/cost', [RajaOngkirController::class, 'calculateCost'])->name('ongkir.cost');
 });
