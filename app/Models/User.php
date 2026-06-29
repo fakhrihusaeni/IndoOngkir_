@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Cart;
 
 class User extends Authenticatable
 {
@@ -27,6 +28,7 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    // Relasi cart & transactions akan ditambah Mhs 2 & 3
     public function cart()
     {
         return $this->hasOne(Cart::class);
@@ -36,4 +38,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Transaction::class);
     }
-}
+    }

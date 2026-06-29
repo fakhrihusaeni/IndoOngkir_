@@ -22,16 +22,9 @@
 
                 @auth
                     @if(!auth()->user()->isAdmin() && $product->stock > 0)
-                        <form method="POST" action="{{ route('cart.add', $product) }}" class="mt-6 flex gap-3">
-                            @csrf
-                            <input type="number" name="quantity" value="1" min="1" max="{{ $product->stock }}"
-                                class="w-20 border border-gray-300 rounded-lg px-3 py-2 text-center focus:ring-2 focus:ring-orange-400 outline-none">
-                            <button type="submit" class="flex-1 bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600">
-                                🛒 Tambah ke Keranjang
-                            </button>
-                        </form>
-                    @elseif($product->stock === 0)
-                        <p class="mt-6 text-red-500 font-semibold">❌ Stok Habis</p>
+                        <button disabled class="mt-6 w-full bg-gray-300 text-gray-500 py-2 rounded-lg cursor-not-allowed">
+                            🛒 Segera Hadir (Mhs 2)
+                        </button>
                     @endif
                 @else
                     <a href="{{ route('login') }}" class="block mt-6 text-center bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600">

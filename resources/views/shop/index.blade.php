@@ -31,13 +31,10 @@
                 <p class="text-xs text-gray-400">Stok: {{ $product->stock }} | {{ $product->weight }}g</p>
                 @auth
                     @if(!auth()->user()->isAdmin())
-                        <form method="POST" action="{{ route('cart.add', $product) }}" class="mt-2">
-                            @csrf
-                            <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="w-full bg-orange-500 text-white text-sm py-1.5 rounded-lg hover:bg-orange-600">
-                                + Keranjang
-                            </button>
-                        </form>
+                        {{-- Sementara disabled sampai Mhs 2 selesai --}}
+                        <button disabled class="w-full bg-gray-300 text-gray-500 text-sm py-1.5 rounded-lg cursor-not-allowed">
+                            Segera Hadir
+                        </button>
                     @endif
                 @else
                     <a href="{{ route('login') }}" class="block mt-2 text-center bg-gray-200 text-gray-700 text-sm py-1.5 rounded-lg hover:bg-gray-300">

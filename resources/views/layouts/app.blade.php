@@ -23,7 +23,7 @@
                         <a href="{{ route('register') }}" class="bg-white text-orange-500 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-orange-50">Daftar</a>
                     @else
                         @if(!auth()->user()->isAdmin())
-                            <a href="{{ route('cart.index') }}" class="text-white hover:text-orange-200 relative">
+    <a href="{{ route('cart.index') }}" class="text-white hover:text-orange-200 relative">
                                 🛒
                                 @php $cartCount = auth()->user()->cart?->items->count() ?? 0; @endphp
                                 @if($cartCount > 0)
