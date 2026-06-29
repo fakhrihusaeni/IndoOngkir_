@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\RajaOngkirController;
+use App\Http\Controllers\TransactionController;
 
 // Auth
 Route::middleware('guest')->group(function () {
@@ -36,6 +37,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/keranjang/update/{cartItem}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/keranjang/hapus/{cartItem}', [CartController::class, 'remove'])->name('cart.remove');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+    // Transaksi
+    Route::post('/transaksi', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::get('/transaksi', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transaksi/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
+    Route::get('/transaksi/{transaction}/invoice', [TransactionController::class, 'printInvoice'])->name('transactions.invoice');
 
     // Sementara sampai Mhs 3 selesai
     Route::get('/transaksi', function() {
@@ -48,3 +54,4 @@ Route::middleware('auth')->prefix('api/ongkir')->group(function () {
     Route::get('/cities', [RajaOngkirController::class, 'getCities'])->name('ongkir.cities');
     Route::post('/cost', [RajaOngkirController::class, 'calculateCost'])->name('ongkir.cost');
 });
+    
