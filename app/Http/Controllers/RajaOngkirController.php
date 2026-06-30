@@ -19,12 +19,16 @@ class RajaOngkirController extends Controller
     // Ambil daftar provinsi
     public function getProvinces()
     {
-        $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
-            ->get("{$this->baseUrl}/province");
+        try {
+            $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
+                ->get("{$this->baseUrl}/province");
 
-        if ($response->successful()) {
-            $data = $response->json();
-            return response()->json($data['rajaongkir']['results']);
+            if ($response->successful()) {
+                $data = $response->json();
+                return response()->json($data['rajaongkir']['results']);
+            }
+        } catch (\Exception $e) {
+            // lanjut ke fallback di bawah
         }
 
         // Fallback data statis kalau API tidak bisa diakses
@@ -43,15 +47,18 @@ class RajaOngkirController extends Controller
     {
         $request->validate(['province_id' => 'required|integer']);
 
-        $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
-            ->get("{$this->baseUrl}/city", ['province' => $request->province_id]);
+        try {
+            $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
+                ->get("{$this->baseUrl}/city", ['province' => $request->province_id]);
 
-        if ($response->successful()) {
-            $data = $response->json();
-            return response()->json($data['rajaongkir']['results']);
+            if ($response->successful()) {
+                $data = $response->json();
+                return response()->json($data['rajaongkir']['results']);
+            }
+        } catch (\Exception $e) {
+            // lanjut ke fallback di bawah
         }
 
-        // Fallback data statis
         $cities = [
             '6' => [['city_id' => '152', 'city_name' => 'Jakarta Pusat', 'type' => 'Kota'], ['city_id' => '153', 'city_name' => 'Jakarta Selatan', 'type' => 'Kota']],
             '9' => [['city_id' => '23', 'city_name' => 'Bandung', 'type' => 'Kota'], ['city_id' => '79', 'city_name' => 'Bekasi', 'type' => 'Kota']],
@@ -74,21 +81,24 @@ class RajaOngkirController extends Controller
             'courier'     => 'required|in:jne,pos,tiki',
         ]);
 
-        $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
-            ->post("{$this->baseUrl}/cost", [
-                'origin'      => 151,
-                'destination' => $request->destination,
-                'weight'      => $request->weight,
-                'courier'     => $request->courier,
-            ]);
+        try {
+            $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
+                ->post("{$this->baseUrl}/cost", [
+                    'origin'      => 151,
+                    'destination' => $request->destination,
+                    'weight'      => $request->weight,
+                    'courier'     => $request->courier,
+                ]);
 
-        if ($response->successful()) {
-            $data    = $response->json();
-            $results = $data['rajaongkir']['results'][0]['costs'] ?? [];
-            return response()->json($results);
+            if ($response->successful()) {
+                $data    = $response->json();
+                $results = $data['rajaongkir']['results'][0]['costs'] ?? [];
+                return response()->json($results);
+            }
+        } catch (\Exception $e) {
+            // lanjut ke fallback di bawah
         }
 
-        // Fallback ongkir statis (estimasi)
         return response()->json([
             ['service' => 'REG', 'description' => 'Layanan Reguler', 'cost' => [['value' => 15000, 'etd' => '2-3']]],
             ['service' => 'YES', 'description' => 'Yakin Esok Sampai', 'cost' => [['value' => 25000, 'etd' => '1-1']]],
