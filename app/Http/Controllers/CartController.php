@@ -69,13 +69,26 @@ class CartController extends Controller
     }
 
     // Tampilan checkout dengan form pengiriman
-    public function checkout()
+    public function checkout(Request $request)
     {
         $cart = auth()->user()->cart;
         if (!$cart || $cart->items->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Keranjang kosong!');
         }
+
         $cart->load('items.product');
-        return view('cart.checkout', compact('cart'));
+
+        // Filter hanya item yang dipilih
+        if ($request->has('items')) {
+            $selectedItems = $cart->items->whereIn('id', $request->items)->values();
+        } else {
+            $selectedItems = $cart->items;
+        }
+
+        if ($selectedItems->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Pilih minimal 1 produk!');
+        }
+
+        return view('cart.checkout', compact('cart', 'selectedItems'));
     }
 }

@@ -25,9 +25,8 @@ Route::get('/produk/{product}', [ProductController::class, 'shopShow'])->name('s
 // Admin
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('products', ProductController::class)->except(['show']);
-    Route::get('/transaksi', function() {
-        return view('admin.transactions.index', ['transactions' => collect()]);
-    })->name('transactions.index');
+    Route::get('/transaksi', [TransactionController::class, 'adminIndex'])->name('transactions.index');
+    Route::patch('/transaksi/{transaction}/status', [TransactionController::class, 'updateStatus'])->name('transactions.updateStatus');
 });
 
 // Keranjang
@@ -43,10 +42,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/transaksi/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
     Route::get('/transaksi/{transaction}/invoice', [TransactionController::class, 'printInvoice'])->name('transactions.invoice');
 
-    // Sementara sampai Mhs 3 selesai
-    Route::get('/transaksi', function() {
-        return view('transactions.index', ['transactions' => collect()]);
-    })->name('transactions.index');
 });
 // RajaOngkir API
 Route::middleware('auth')->prefix('api/ongkir')->group(function () {
