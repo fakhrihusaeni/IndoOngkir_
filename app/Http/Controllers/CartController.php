@@ -20,32 +20,30 @@ class CartController extends Controller
     }
 
     // Tambah produk ke keranjang
-    public function add(Request $request, Product $product)
+    public function add(Request $request, $productId)
     {
-        $request->validate(['quantity' => 'required|integer|min:1']);
-
-        if ($request->quantity > $product->stock) {
-            return back()->with('error', 'Stok tidak mencukupi!');
-        }
-
+        // 1. Ambil data produk berdasarkan ID yang dikirim form
+        $product = Product::findOrFail($productId);
+        
+        // 2. Ambil atau buat keranjang baru untuk user yang sedang login
         $cart = Cart::firstOrCreate(['user_id' => auth()->id()]);
 
+        // 3. Cek apakah produk tersebut sudah ada di keranjang
         $cartItem = $cart->items()->where('product_id', $product->id)->first();
 
         if ($cartItem) {
-            $newQty = $cartItem->quantity + $request->quantity;
-            if ($newQty > $product->stock) {
-                return back()->with('error', 'Stok tidak mencukupi!');
-            }
-            $cartItem->update(['quantity' => $newQty]);
+            // Jika sudah ada, tambahkan quantity-nya
+            $cartItem->increment('quantity');
         } else {
+            // Jika belum ada, buat item baru di keranjang
             $cart->items()->create([
                 'product_id' => $product->id,
-                'quantity'   => $request->quantity,
+                'quantity' => 1,
             ]);
         }
 
-        return back()->with('success', 'Produk ditambahkan ke keranjang!');
+        // 4. Alihkan halaman ke halaman keranjang belanja dengan pesan sukses
+        return redirect()->route('cart.index')->with('success', 'Produk berhasil ditambahkan ke keranjang!');
     }
 
     // Update quantity item
