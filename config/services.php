@@ -15,8 +15,13 @@ return [
     */
 
     'rajaongkir' => [
-        'api_key'  => env('RAJAONGKIR_API_KEY'),
-        'base_url' => env('RAJAONGKIR_BASE_URL', 'https://api.rajaongkir.com/starter'),
+        'api_key'  => env('KOMERCE_API_KEY', '95pLeqm0127952fafb120b1dhbWyPPI6'),
+        'base_url' => env('KOMERCE_BASE_URL', 'https://api.komerce.id'),
+    ],
+
+    'komerce' => [
+        'api_key'  => env('KOMERCE_API_KEY', 'MyibQskl127952fafb120b1dub83YWFJ'),
+        'base_url' => env('KOMERCE_BASE_URL', 'https://api.komerce.id'),
     ],
 
     'postmark' => [

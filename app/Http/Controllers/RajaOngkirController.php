@@ -21,7 +21,7 @@ class RajaOngkirController extends Controller
     {
         try {
             $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
-                ->get("{$this->baseUrl}/province");
+                ->get("{$this->baseUrl}/api/v1/destination/province");
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -49,7 +49,7 @@ class RajaOngkirController extends Controller
 
         try {
             $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
-                ->get("{$this->baseUrl}/city", ['province' => $request->province_id]);
+                ->get("{$this->baseUrl}/api/v1/destination/city", ['province_id' => $request->province_id]);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -83,11 +83,11 @@ class RajaOngkirController extends Controller
 
         try {
             $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
-                ->post("{$this->baseUrl}/cost", [
-                    'origin'      => 151,
-                    'destination' => $request->destination,
-                    'weight'      => $request->weight,
-                    'courier'     => $request->courier,
+                ->post("{$this->baseUrl}/api/v1/shipping-cost", [
+                    'origin_id'      => '151',
+                    'destination_id' => $request->destination,
+                    'weight'         => $request->weight,
+                    'courier_code'   => $request->courier,
                 ]);
 
             if ($response->successful()) {
