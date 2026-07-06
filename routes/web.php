@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\RajaOngkirController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\PaymentController;
 
 // Auth
 Route::middleware('guest')->group(function () {
@@ -49,4 +50,9 @@ Route::middleware('auth')->prefix('api/ongkir')->group(function () {
     Route::get('/cities', [RajaOngkirController::class, 'getCities'])->name('ongkir.cities');
     Route::post('/cost', [RajaOngkirController::class, 'calculateCost'])->name('ongkir.cost');
 });
-    
+  Route::middleware('auth')->group(function () {
+    Route::get('/transaksi/{transaction}/bayar', [PaymentController::class, 'show'])->name('payment.show');
+    Route::post('/transaksi/{transaction}/bayar', [PaymentController::class, 'process'])->name('payment.process');
+    Route::get('/transaksi/{transaction}/cek-status', [PaymentController::class, 'checkStatus'])->name('payment.check');
+});
+Route::post('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');  
