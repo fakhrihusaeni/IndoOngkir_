@@ -63,7 +63,7 @@
         <div class="space-y-4">
             <div class="bg-white rounded-xl shadow p-6">
                 <h2 class="text-lg font-bold text-gray-800 mb-4">📦 Pesanan</h2>
-                @foreach($selectedItems as $item)
+                @foreach($cart->items as $item)
                 <div class="flex gap-2 mb-3">
                     <img src="{{ $item->product->image_url }}" class="w-12 h-12 object-cover rounded">
                     <div class="flex-1 text-sm">
@@ -72,14 +72,11 @@
                     </div>
                 </div>
                 @endforeach
-                @foreach($selectedItems as $item)
-                    <input type="hidden" name="selected_items[]" value="{{ $item->id }}">
-                @endforeach
                 <hr class="my-3">
                 <div class="space-y-1 text-sm">
                     <div class="flex justify-between">
                         <span>Subtotal</span>
-                        <span>Rp {{ number_format($selectedItems->sum(fn($i) => $i->product->price * $i->quantity), 0, ',', '.') }}</span>
+                        <span>Rp {{ number_format($cart->subtotal, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span>Ongkir</span>
@@ -87,10 +84,10 @@
                     </div>
                     <div class="flex justify-between font-bold text-lg border-t pt-2">
                         <span>Total</span>
-                        <span class="text-orange-500" id="totalDisplay">Rp {{ number_format($selectedItems->sum(fn($i) => $i->product->price * $i->quantity), 0, ',', '.') }}</span>
+                        <span class="text-orange-500" id="totalDisplay">Rp {{ number_format($cart->subtotal, 0, ',', '.') }}</span>
                     </div>
                 </div>
-                <p class="text-xs text-gray-400 mt-1">⚖️ Total berat: {{ $selectedItems->sum(fn($i) => $i->product->weight * $i->quantity) }}g</p>
+                <p class="text-xs text-gray-400 mt-1">⚖️ Total berat: {{ $cart->total_weight }}g</p>
             </div>
 
             <button type="submit" id="submitBtn" disabled
@@ -104,8 +101,8 @@
 
 @push('scripts')
 <script>
-const totalWeight = {{ $selectedItems->sum(fn($i) => $i->product->weight * $i->quantity) }};
-const subtotal = {{ $selectedItems->sum(fn($i) => $i->product->price * $i->quantity) }};
+const totalWeight = {{ $cart->total_weight }};
+const subtotal = {{ $cart->subtotal }};
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 // Format rupiah
