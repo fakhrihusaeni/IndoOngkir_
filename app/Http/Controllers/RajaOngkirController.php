@@ -11,7 +11,7 @@ class RajaOngkirController extends Controller
 
     public function __construct()
     {
-        $this->apiKey = config('services.komerce.api_key');
+        $this->apiKey = config('https://api.rajaongkir.com/starter');
     }
 
     // Ambil daftar provinsi
