@@ -4,33 +4,43 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log; // Ditambahkan untuk mencatat error jika terjadi kegagalan API
 
 class RajaOngkirController extends Controller
 {
-    private ?string $apiKey;
+    protected $api_key;
+    protected $base_url;
 
     public function __construct()
     {
-        $this->apiKey = config('https://api.rajaongkir.com/starter');
+        // Mengambil data dari config/services.php > array 'komerce'
+        $this->api_key = config('services.komerce.api_key');
+        $this->base_url = config('services.komerce.base_url');
     }
 
-    // Ambil daftar provinsi
     public function getProvinces()
     {
-        if (empty($this->apiKey) || empty($this->baseUrl)) {
+        if (empty($this->api_key) || empty($this->base_url)) {
             return $this->fallbackProvinces();
         }
 
         try {
-            $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
-                ->get("{$this->baseUrl}/province");
+            $response = Http::timeout(5)
+                ->withOptions(['verify' => false]) // Solusi cURL error 60 (SSL issue) di localhost
+                ->withHeaders(['key' => $this->api_key])
+                ->get("{$this->base_url}/province");
 
             if ($response->successful()) {
                 $data = $response->json();
                 return response()->json($data['rajaongkir']['results']);
             }
+
+            // Jika respons tidak sukses (misal: 400 Bad Request / 401 Unauthorized dari RajaOngkir)
+            Log::error('RajaOngkir API Province Error: ' . $response->body());
+
         } catch (\Exception $e) {
-            // lanjut ke fallback
+            // Mencatat error ke dalam file storage/logs/laravel.log agar bisa ditelusuri
+            Log::error('RajaOngkir Exception: ' . $e->getMessage());
         }
 
         return $this->fallbackProvinces();
@@ -40,20 +50,25 @@ class RajaOngkirController extends Controller
     {
         $request->validate(['province_id' => 'required|integer']);
 
-        if (empty($this->apiKey) || empty($this->baseUrl)) {
+        if (empty($this->api_key) || empty($this->base_url)) {
             return $this->fallbackCities($request->province_id);
         }
 
         try {
-            $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
-                ->get("{$this->baseUrl}/city", ['province' => $request->province_id]);
+            $response = Http::timeout(5)
+                ->withOptions(['verify' => false]) // Solusi cURL error 60 (SSL issue) di localhost
+                ->withHeaders(['key' => $this->api_key])
+                ->get("{$this->base_url}/city", ['province' => $request->province_id]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 return response()->json($data['rajaongkir']['results']);
             }
+
+            Log::error('RajaOngkir API City Error: ' . $response->body());
+
         } catch (\Exception $e) {
-            // lanjut ke fallback
+            Log::error('RajaOngkir City Exception: ' . $e->getMessage());
         }
 
         return $this->fallbackCities($request->province_id);
@@ -68,14 +83,16 @@ class RajaOngkirController extends Controller
             'courier'     => 'required|in:jne,pos,tiki',
         ]);
 
-        if (empty($this->apiKey) || empty($this->baseUrl)) {
+        if (empty($this->api_key) || empty($this->base_url)) {
             return $this->fallbackCosts();
         }
 
         try {
-            $response = Http::timeout(5)->withHeaders(['key' => $this->apiKey])
-                ->post("{$this->baseUrl}/cost", [
-                    'origin'      => 151,
+            $response = Http::timeout(5)
+                ->withOptions(['verify' => false]) // Solusi cURL error 60 (SSL issue) di localhost
+                ->withHeaders(['key' => $this->api_key])
+                ->post("{$this->base_url}/cost", [
+                    'origin'      => 151, // Default Jakarta Barat sesuai fallback Anda
                     'destination' => $request->destination,
                     'weight'      => $request->weight,
                     'courier'     => $request->courier,
@@ -86,8 +103,11 @@ class RajaOngkirController extends Controller
                 $results = $data['rajaongkir']['results'][0]['costs'] ?? [];
                 return response()->json($results);
             }
+
+            Log::error('RajaOngkir API Cost Error: ' . $response->body());
+
         } catch (\Exception $e) {
-            // lanjut ke fallback
+            Log::error('RajaOngkir Cost Exception: ' . $e->getMessage());
         }
 
         return $this->fallbackCosts();
