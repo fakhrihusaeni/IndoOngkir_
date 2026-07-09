@@ -233,101 +233,81 @@ document.getElementById('city').addEventListener('change', function () {
 
 });
 
-// ====================
-// HITUNG ONGKIR
-// ====================
-
 function hitungOngkir(){
-
-    const district=document.getElementById('district').value;
-    const courier=document.getElementById('courier').value;
+    const district = document.getElementById('district').value;
+    const courier = document.getElementById('courier').value;
 
     if(!district || !courier) return;
 
+    // Tampilkan pesan loading selagi memuat data
+    const container = document.getElementById('serviceContainer');
+    const list = document.getElementById('serviceList');
+    list.innerHTML = '<p class="text-sm text-gray-500 animate-pulse">Sedang memuat layanan pengiriman...</p>';
+    container.classList.remove('hidden');
+
     fetch('/api/ongkir/cost',{
-
         method:'POST',
-
         headers:{
             'Content-Type':'application/json',
             'X-CSRF-TOKEN':csrfToken
         },
-
         body:JSON.stringify({
-
-            destination:district,
-            weight:totalWeight,
-            courier:courier
-
+            destination: district,
+            weight: totalWeight,
+            courier: courier
         })
-
     })
+    .then(r => r.json())
+    .then(res => {
+        // Ambil data kurir pertama (index 0) dari hasil response backend
+        const courierData = res.data && res.data[0] ? res.data[0] : null;
+        // Ambil array 'costs' yang berisi daftar layanan (REG, OKE, dll)
+        const services = courierData && courierData.costs ? courierData.costs : [];
 
-    .then(r=>r.json())
+        list.innerHTML = '';
 
-    .then(res=>{
+        if(services.length === 0){
+            list.innerHTML = '<p class="text-red-500 text-sm">Tidak ada layanan pengiriman yang tersedia saat ini.</p>';
+            document.getElementById('submitBtn').disabled = true;
+            return;
+        }
 
-    const services = res.data;
-
-    const container=document.getElementById('serviceContainer');
-    const list=document.getElementById('serviceList');
-
-    list.innerHTML='';
-
-    if(!services || services.length===0){
-
-        list.innerHTML='<p>Tidak ada layanan.</p>';
-        container.classList.remove('hidden');
-        return;
-
-    }
-
-    services.forEach((s,index)=>{
-
-
-            const cost=s.cost[0].value;
+        services.forEach((s, index) => {
+            const cost = s.cost[0].value;
+            const etd = s.cost[0].etd ? `Estimasi ${s.cost[0].etd} Hari` : '';
+            const note = s.cost[0].note ? `<span class="text-xs text-orange-500 block">*${s.cost[0].note}</span>` : '';
 
             list.innerHTML += `
-            <label class="flex items-center gap-3 border rounded-lg p-3">
-
-            <input
-                type="radio"
-                name="service_choice"
-                value="${s.service}"
-                data-cost="${cost}"
-                ${index===0?'checked':''}
-                onchange="selectService('${s.service}',${cost})">
-
-            <div>
-
-                <b>${courier.toUpperCase()} ${s.service}</b>
-
-                <br>
-
-                ${s.description}
-
-                <br>
-
-                ${formatRp(cost)}
-
-                (Estimasi ${s.cost[0].etd})
-
-            </div>
-
+            <label class="flex items-center gap-3 border border-gray-200 rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition">
+                <input
+                    type="radio"
+                    name="service_choice"
+                    value="${s.service}"
+                    data-cost="${cost}"
+                    ${index === 0 ? 'checked' : ''}
+                    onchange="selectService('${s.service}', ${cost})"
+                    class="text-orange-500 focus:ring-orange-400">
+                <div class="text-sm text-gray-700">
+                    <b class="text-gray-900">${courier.toUpperCase()} ${s.service}</b>
+                    <p class="text-gray-500 text-xs">${s.description}</p>
+                    <p class="font-semibold text-orange-500 mt-1">${formatRp(cost)} <span class="text-gray-400 font-normal text-xs">(${etd})</span></p>
+                    ${note}
+                </div>
             </label>
             `;
-
         });
 
-        container.classList.remove('hidden');
-
+        // Set secara default ke layanan pertama yang muncul
         selectService(
             services[0].service,
             services[0].cost[0].value
         );
-
+    })
+    .catch(err => {
+        console.error("Error fetching cost:", err);
+        list.innerHTML = '<p class="text-red-500 text-sm">Terjadi gangguan koneksi, silakan coba lagi.</p>';
+        document.getElementById('submitBtn').disabled = true;
     });
-
 }
 
 function selectService(service,cost){

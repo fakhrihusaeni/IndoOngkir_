@@ -16,8 +16,8 @@ class TransactionController extends Controller
             'recipient_name'    => 'required|string|max:255',
             'recipient_address' => 'required|string',
             'province_name'     => 'required|string',
-            'city_id'           => 'required|integer',
-            'city_name'         => 'required|string',
+            // 'city_id' DIHAPUS dari validasi karena tidak dikirim dari form dan database hanya butuh city_name
+            'city_name'         => 'required|string', 
             'courier'           => 'required|in:jne,pos,tiki',
             'courier_service'   => 'required|string',
             'shipping_cost'     => 'required|numeric|min:0',
@@ -76,7 +76,7 @@ class TransactionController extends Controller
                 $item->product->decrement('stock', $item->quantity);
                 $item->delete();
             }
-        });
+    });
 
         return redirect()->route('transactions.index')->with('success', 'Pesanan berhasil dibuat!');
     }

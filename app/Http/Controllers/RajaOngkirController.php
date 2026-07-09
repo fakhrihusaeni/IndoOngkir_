@@ -149,86 +149,101 @@ class RajaOngkirController extends Controller
 
     /**
      * ===========================
-     * HITUNG ONGKIR
+     * HITUNG ONGKIR WITH FALLBACK
      * ===========================
      */
     public function calculateCost(Request $request)
     {
-
         $request->validate([
-
             'destination'=>'required',
-
             'weight'=>'required|numeric|min:1',
-
             'courier'=>'required'
-
         ]);
 
-        try{
+        // Siapkan struktur data fallback standar jika API bermasalah/tidak mengembalikan layanan
+        $fallbackData = [
+            [
+                'code' => strtolower($request->courier),
+                'name' => strtoupper($request->courier),
+                'costs' => [
+                    [
+                        'service' => 'REG',
+                        'description' => 'Layanan Reguler',
+                        'cost' => [
+                            [
+                                'value' => 15000, // Nominal flat tarif fallback
+                                'etd' => '2-4',
+                                'note' => 'Sistem cadangan aktif'
+                            ]
+                        ]
+                    ],
+                    [
+                        'service' => 'OKE',
+                        'description' => 'Layanan Ekonomis',
+                        'cost' => [
+                            [
+                                'value' => 10000,
+                                'etd' => '4-7',
+                                'note' => 'Sistem cadangan aktif'
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
 
-            /**
-             * ===================================================
-             * GANTI ANGKA INI DENGAN ID KECAMATAN TOKO
-             * ===================================================
-             */
+        try {
             $origin = 50198;
 
             $response = Http::withHeaders([
                 'key'=>$this->key
             ])->post(
                 $this->base.'/calculate/district/domestic-cost',
-
                 [
-
                     'origin'=>$origin,
-
                     'destination'=>$request->destination,
-
                     'weight'=>$request->weight,
-
                     'courier'=>$request->courier
-
                 ]
-
             );
 
-            if(!$response->successful()){
-
+            // JIKA API GAGAL / LIMIT ABIS (Tidak Berhasil)
+            if (!$response->successful()) {
+                Log::warning("RajaOngkir API gagal. Mengaktifkan fallback data. Error: " . $response->body());
+                
                 return response()->json([
-
-                    'success'=>false,
-
-                    'message'=>'Gagal menghitung ongkir',
-
-                    'error'=>$response->body()
-
-                ],$response->status());
-
+                    'success' => true, 
+                    'data' => $fallbackData,
+                    'is_fallback' => true 
+                ]);
             }
 
+            $responseData = $response->json()['data'] ?? [];
+
+            // JIKA API BERHASIL TAPI RESPONS DATA LAYANAN KOSONG
+            if (empty($responseData)) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $fallbackData,
+                    'is_fallback' => true
+                ]);
+            }
+
+            // JIKA SEMUA BERJALAN NORMAL
             return response()->json([
-
                 'success'=>true,
-
-                'data'=>$response->json()['data']
-
+                'data'=>$responseData
             ]);
 
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
+            Log::error("Exception pada RajaOngkir, mengaktifkan fallback: " . $e->getMessage());
 
-            Log::error($e->getMessage());
-
+            // JIKA TERJADI EXCEPTION (Misal Server RajaOngkir Down), TETAP KEMBALIKAN FALLBACK
             return response()->json([
-
-                'success'=>false,
-
-                'message'=>$e->getMessage()
-
-            ],500);
-
+                'success' => true,
+                'data' => $fallbackData,
+                'is_fallback' => true
+            ]);
         }
-
     }
-
 }
