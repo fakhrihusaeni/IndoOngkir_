@@ -8,12 +8,10 @@ use Illuminate\Support\Facades\Http;
 class RajaOngkirController extends Controller
 {
     private ?string $apiKey;
-    private ?string $baseUrl;
 
     public function __construct()
     {
-        $this->apiKey  = config('services.rajaongkir.api_key') ?? '';
-        $this->baseUrl = config('services.rajaongkir.base_url') ?? '';
+        $this->apiKey = config('services.komerce.api_key');
     }
 
     // Ambil daftar provinsi
@@ -94,10 +92,6 @@ class RajaOngkirController extends Controller
 
         return $this->fallbackCosts();
     }
-
-    // ==========================================
-    // DATA FALLBACK YANG SUDAH DITAMBAH (STATIS)
-    // ==========================================
     
     private function fallbackProvinces() 
     {
