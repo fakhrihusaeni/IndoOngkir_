@@ -13,7 +13,7 @@
         <div>
             <p class="text-amber-400 text-sm font-semibold mb-2 uppercase tracking-wider">🌟 Produk UMKM Pilihan</p>
             <h1 class="font-display font-bold text-white text-3xl md:text-4xl leading-tight mb-3">
-                Belanja Produk Lokal,<br>Kirim ke Seluruh Indonesia
+                Belanja Produk Lokal berkualitas,<br>Kirim ke Seluruh Indonesia
             </h1>
             <p class="text-slate-300 text-sm">Gratis ongkos kirim untuk pembelian pertama • JNE • POS • TIKI</p>
         </div>
