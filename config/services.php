@@ -15,7 +15,7 @@ return [
     */
 
     'komerce' => [
-        'api_key'  => env('KOMERCE_API_KEY'),
+        'api_key' => env('KOMERCE_API_KEY'),
         'base_url' => env('KOMERCE_BASE_URL'),
     ],
     'postmark' => [

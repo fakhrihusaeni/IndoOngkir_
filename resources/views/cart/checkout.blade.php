@@ -23,22 +23,51 @@
                         <textarea name="recipient_address" rows="3" required
                             class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"></textarea>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-3 gap-3">
+
+                        <!-- Provinsi -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Provinsi</label>
-                            <select id="province" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Provinsi
+                            </label>
+
+                            <select id="province"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2">
                                 <option value="">-- Pilih Provinsi --</option>
                             </select>
+
                             <input type="hidden" name="province_name" id="province_name">
                         </div>
+
+                        <!-- Kota -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Kota/Kabupaten</label>
-                            <select id="city" disabled class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none disabled:bg-gray-100">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Kota
+                            </label>
+
+                            <select id="city" disabled
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2">
                                 <option value="">-- Pilih Kota --</option>
                             </select>
-                            <input type="hidden" name="city_id" id="city_id">
+
                             <input type="hidden" name="city_name" id="city_name">
                         </div>
+
+                        <!-- Kecamatan -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Kecamatan
+                            </label>
+
+                            <select id="district" disabled
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2">
+                                <option value="">-- Pilih Kecamatan --</option>
+                            </select>
+
+                            <input type="hidden" name="district_id" id="district_id">
+                            <input type="hidden" name="district_name" id="district_name">
+                        </div>
+
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kurir</label>
@@ -103,104 +132,219 @@
 <script>
 const totalWeight = {{ $cart->total_weight }};
 const subtotal = {{ $cart->subtotal }};
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-// Format rupiah
-const formatRp = (n) => 'Rp ' + n.toLocaleString('id-ID');
+const formatRp = (n) => 'Rp ' + Number(n).toLocaleString('id-ID');
 
-// Load provinsi saat halaman dibuka
+// ====================
+// LOAD PROVINCE
+// ====================
+
 fetch('/api/ongkir/provinces')
-    .then(r => r.json())
-    .then(data => {
-        const sel = document.getElementById('province');
-        data.forEach(p => {
-            sel.innerHTML += `<option value="${p.province_id}" data-name="${p.province}">${p.province}</option>`;
-        });
+.then(r => r.json())
+.then(res => {
+
+    const sel = document.getElementById('province');
+
+    res.data.forEach(p => {
+
+        sel.innerHTML += `
+            <option value="${p.id}">
+                ${p.name}
+            </option>
+        `;
+
     });
 
-// Saat provinsi dipilih, load kota
-document.getElementById('province').addEventListener('change', function () {
-    const id = this.value;
-    const name = this.options[this.selectedIndex].dataset.name;
-    document.getElementById('province_name').value = name;
-
-    const cityEl = document.getElementById('city');
-    cityEl.disabled = true;
-    cityEl.innerHTML = '<option value="">Loading...</option>';
-
-    fetch(`/api/ongkir/cities?province_id=${id}`)
-        .then(r => r.json())
-        .then(data => {
-            cityEl.innerHTML = '<option value="">-- Pilih Kota --</option>';
-            data.forEach(c => {
-                cityEl.innerHTML += `<option value="${c.city_id}" data-name="${c.type} ${c.city_name}">${c.type} ${c.city_name}</option>`;
-            });
-            cityEl.disabled = false;
-        });
 });
 
-// Fungsi hitung ongkir
-function hitungOngkir() {
-    const cityId = document.getElementById('city').value;
-    const courier = document.getElementById('courier').value;
-    if (!cityId || !courier) return;
+// ====================
+// LOAD CITY
+// ====================
 
-    const cityName = document.getElementById('city').options[document.getElementById('city').selectedIndex].dataset.name;
-    document.getElementById('city_id').value = cityId;
-    document.getElementById('city_name').value = cityName;
+document.getElementById('province').addEventListener('change', function () {
 
-    fetch('/api/ongkir/cost', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken
-        },
-        body: JSON.stringify({ destination: cityId, weight: totalWeight, courier: courier })
-    })
+    const id = this.value;
+
+    const cityEl = document.getElementById('city');
+
+    document.getElementById('province_name').value =
+        this.options[this.selectedIndex].text;
+
+    fetch('/api/ongkir/cities?province_id=' + id)
+        .then(r => r.json())
+        .then(res => {
+
+            cityEl.innerHTML = '<option value="">-- Pilih Kota --</option>';
+
+            res.data.forEach(c => {
+
+                cityEl.innerHTML += `
+                    <option value="${c.id}">
+                        ${c.name}
+                    </option>
+                `;
+
+            });
+
+            cityEl.disabled = false;
+
+        });
+
+});
+
+
+
+// ====================
+// LOAD DISTRICT
+// ====================
+
+document.getElementById('city').addEventListener('change', function () {
+
+    const cityId = this.value;
+
+    const districtEl = document.getElementById('district');
+
+    document.getElementById('city_name').value =
+        this.options[this.selectedIndex].text;
+
+    fetch('/api/ongkir/districts?city_id=' + cityId)
+
     .then(r => r.json())
-    .then(services => {
-        const container = document.getElementById('serviceContainer');
-        const list = document.getElementById('serviceList');
-        list.innerHTML = '';
 
-        if (!services.length) {
-            list.innerHTML = '<p class="text-red-500 text-sm">Layanan tidak tersedia untuk tujuan ini.</p>';
-            container.classList.remove('hidden');
-            return;
-        }
+    .then(res => {
 
-        services.forEach((s, i) => {
-            const cost = s.cost[0].value;
+        districtEl.innerHTML =
+            '<option value="">-- Pilih Kecamatan --</option>';
+
+        res.data.forEach(d => {
+
+            districtEl.innerHTML += `
+                <option value="${d.id}">
+                    ${d.name}
+                </option>
+            `;
+
+        });
+
+        districtEl.disabled = false;
+
+    });
+
+});
+
+// ====================
+// HITUNG ONGKIR
+// ====================
+
+function hitungOngkir(){
+
+    const district=document.getElementById('district').value;
+    const courier=document.getElementById('courier').value;
+
+    if(!district || !courier) return;
+
+    fetch('/api/ongkir/cost',{
+
+        method:'POST',
+
+        headers:{
+            'Content-Type':'application/json',
+            'X-CSRF-TOKEN':csrfToken
+        },
+
+        body:JSON.stringify({
+
+            destination:district,
+            weight:totalWeight,
+            courier:courier
+
+        })
+
+    })
+
+    .then(r=>r.json())
+
+    .then(res=>{
+
+    const services = res.data;
+
+    const container=document.getElementById('serviceContainer');
+    const list=document.getElementById('serviceList');
+
+    list.innerHTML='';
+
+    if(!services || services.length===0){
+
+        list.innerHTML='<p>Tidak ada layanan.</p>';
+        container.classList.remove('hidden');
+        return;
+
+    }
+
+    services.forEach((s,index)=>{
+
+
+            const cost=s.cost[0].value;
+
             list.innerHTML += `
-                <label class="flex items-center gap-3 border rounded-lg p-3 cursor-pointer hover:border-orange-400">
-                    <input type="radio" name="service_choice" value="${s.service}" data-cost="${cost}" ${i === 0 ? 'checked' : ''}
-                        onchange="selectService('${s.service}', ${cost})">
-                    <div>
-                        <span class="font-medium">${courier.toUpperCase()} ${s.service}</span>
-                        <span class="text-gray-500 text-sm"> - ${s.description}</span>
-                        <span class="text-orange-500 font-bold ml-2">${formatRp(cost)}</span>
-                        <span class="text-gray-400 text-xs ml-1">(Est. ${s.cost[0].etd} hari)</span>
-                    </div>
-                </label>`;
+            <label class="flex items-center gap-3 border rounded-lg p-3">
+
+            <input
+                type="radio"
+                name="service_choice"
+                value="${s.service}"
+                data-cost="${cost}"
+                ${index===0?'checked':''}
+                onchange="selectService('${s.service}',${cost})">
+
+            <div>
+
+                <b>${courier.toUpperCase()} ${s.service}</b>
+
+                <br>
+
+                ${s.description}
+
+                <br>
+
+                ${formatRp(cost)}
+
+                (Estimasi ${s.cost[0].etd})
+
+            </div>
+
+            </label>
+            `;
+
         });
 
         container.classList.remove('hidden');
-        // Auto-pilih yang pertama
-        const first = services[0];
-        selectService(first.service, first.cost[0].value);
+
+        selectService(
+            services[0].service,
+            services[0].cost[0].value
+        );
+
     });
+
 }
 
-function selectService(service, cost) {
-    document.getElementById('courier_service').value = service;
-    document.getElementById('shipping_cost').value = cost;
-    const total = subtotal + cost;
-    document.getElementById('ongkirDisplay').textContent = formatRp(cost);
-    document.getElementById('totalDisplay').textContent = formatRp(total);
-    document.getElementById('submitBtn').disabled = false;
+function selectService(service,cost){
+
+    document.getElementById('courier_service').value=service;
+    document.getElementById('shipping_cost').value=cost;
+
+    document.getElementById('ongkirDisplay').innerHTML=formatRp(cost);
+
+    document.getElementById('totalDisplay').innerHTML=formatRp(subtotal+cost);
+
+    document.getElementById('submitBtn').disabled=false;
+
 }
 
-document.getElementById('city').addEventListener('change', hitungOngkir);
-document.getElementById('courier').addEventListener('change', hitungOngkir);
+document.getElementById('district').addEventListener('change',hitungOngkir);
+
+document.getElementById('courier').addEventListener('change',hitungOngkir);
 </script>
 @endpush
