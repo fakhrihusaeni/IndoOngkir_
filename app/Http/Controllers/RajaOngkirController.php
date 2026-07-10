@@ -147,6 +147,24 @@ class RajaOngkirController extends Controller
 
     }
 
+    public function getVillages(Request $request)
+    {
+        $request->validate([
+            'district_id' => 'required'
+        ]);
+
+        $response = Http::withHeaders([
+            'key' => $this->key
+        ])->get(
+            $this->base.'/destination/subdistrict/'.$request->district_id
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => $response->json()['data']
+        ]);
+    }
+
     /**
      * ===========================
      * HITUNG ONGKIR WITH FALLBACK

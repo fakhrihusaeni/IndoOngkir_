@@ -67,6 +67,22 @@
                             <input type="hidden" name="district_id" id="district_id">
                             <input type="hidden" name="district_name" id="district_name">
                         </div>
+                        
+                        <div>
+                            <label>Desa / Kelurahan</label>
+
+                            <select id="village" disabled
+                                class="w-full border rounded-lg px-4 py-2">
+
+                                <option value="">-- Pilih Desa --</option>
+
+                            </select>
+
+                            <input type="hidden"
+                                name="village_name"
+                                id="village_name">
+
+                        </div>
 
                     </div>
                     <div>
@@ -233,6 +249,38 @@ document.getElementById('city').addEventListener('change', function () {
 
 });
 
+    // ====================
+    // LOAD VILLAGE
+    // ====================
+
+    document.getElementById('district').addEventListener('change', function () {
+
+        const id = this.value;
+
+        fetch('/api/ongkir/villages?district_id=' + id)
+            .then(r => r.json())
+            .then(res => {
+
+                const village = document.getElementById('village');
+
+                village.innerHTML = '<option value="">-- Pilih Desa/Kelurahan --</option>';
+
+                res.data.forEach(v => {
+
+                    village.innerHTML += `
+                        <option value="${v.id}">
+                            ${v.name}
+                        </option>
+                    `;
+
+                });
+
+                village.disabled = false;
+
+            });
+
+    });
+
 function hitungOngkir(){
     const district = document.getElementById('district').value;
     const courier = document.getElementById('courier').value;
@@ -323,8 +371,8 @@ function selectService(service,cost){
 
 }
 
-document.getElementById('district').addEventListener('change',hitungOngkir);
+document.getElementById('village').addEventListener('change', hitungOngkir);
 
-document.getElementById('courier').addEventListener('change',hitungOngkir);
+document.getElementById('courier').addEventListener('change', hitungOngkir);
 </script>
 @endpush

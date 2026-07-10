@@ -36,6 +36,7 @@ Route::prefix('api/ongkir')->group(function () {
     Route::get('/cities', [RajaOngkirController::class, 'getCities'])->name('ongkir.cities');
     Route::post('/cost', [RajaOngkirController::class, 'calculateCost'])->name('ongkir.cost');
     Route::get('/districts', [RajaOngkirController::class, 'getDistricts'])->name('ongkir.districts');
+    Route::get('/villages', [RajaOngkirController::class, 'getVillages']);
 });
 
 // ==========================================
