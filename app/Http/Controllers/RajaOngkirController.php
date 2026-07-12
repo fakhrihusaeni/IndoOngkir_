@@ -154,17 +154,13 @@ class RajaOngkirController extends Controller
         ]);
 
         $response = Http::withHeaders([
-            'key' => $this->key
+            'key' => $this->key,
         ])->get(
-            $this->base.'/destination/subdistrict/'.$request->district_id
+            $this->base . '/destination/sub-district/' . $request->district_id
         );
 
-        return response()->json([
-            'success' => true,
-            'data' => $response->json()['data']
-        ]);
+        return response()->json($response->json(), $response->status());
     }
-
     /**
      * ===========================
      * HITUNG ONGKIR WITH FALLBACK

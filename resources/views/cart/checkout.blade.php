@@ -68,20 +68,19 @@
                             <input type="hidden" name="district_name" id="district_name">
                         </div>
                         
+                       <!-- Desa / Kelurahan -->
                         <div>
-                            <label>Desa / Kelurahan</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Desa
+                            </label>
 
                             <select id="village" disabled
-                                class="w-full border rounded-lg px-4 py-2">
-
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2">
                                 <option value="">-- Pilih Desa --</option>
-
                             </select>
 
-                            <input type="hidden"
-                                name="village_name"
-                                id="village_name">
-
+                            <input type="hidden" name="village_id" id="village_id">
+                            <input type="hidden" name="village_name" id="village_name">
                         </div>
 
                     </div>
@@ -256,27 +255,43 @@ document.getElementById('city').addEventListener('change', function () {
     document.getElementById('district').addEventListener('change', function () {
 
         const id = this.value;
+        const village = document.getElementById('village');
+
+        // reset dulu
+        village.innerHTML = '<option value="">Loading...</option>';
+        village.disabled = true;
 
         fetch('/api/ongkir/villages?district_id=' + id)
-            .then(r => r.json())
+            .then(res => res.json())
             .then(res => {
 
-                const village = document.getElementById('village');
+                console.log(res);
 
                 village.innerHTML = '<option value="">-- Pilih Desa/Kelurahan --</option>';
 
-                res.data.forEach(v => {
+                // kalau datanya ada di res.data
+                const data = res.data ?? res.body?.data ?? [];
 
+                if (data.length === 0) {
+                    village.innerHTML = '<option value="">Data desa tidak ditemukan</option>';
+                    village.disabled = true;
+                    return;
+                }
+
+                data.forEach(v => {
                     village.innerHTML += `
                         <option value="${v.id}">
                             ${v.name}
                         </option>
                     `;
-
                 });
 
                 village.disabled = false;
-
+            })
+            .catch(err => {
+                console.error(err);
+                village.innerHTML = '<option value="">Gagal memuat desa</option>';
+                village.disabled = true;
             });
 
     });
